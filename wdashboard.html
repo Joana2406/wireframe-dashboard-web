@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CobranzaOS — Admin Dashboard</title>
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #f4f4f5;
+      --surface:     #ffffff;
+      --border:      #d4d4d8;
+      --border-soft: #e4e4e7;
+      --text-1:      #18181b;
+      --text-2:      #52525b;
+      --text-3:      #a1a1aa;
+      --accent:      #3f3f46;
+      --accent-lt:   #71717a;
+      --stripe:      #fafafa;
+      --sidebar-w:   220px;
+      --topbar-h:    56px;
+      --radius:      6px;
+      --shadow:      0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: var(--bg);
+      color: var(--text-1);
+      display: flex;
+      min-height: 100vh;
+      font-size: 13px;
+    }
+
+    /* ─── SIDEBAR ──────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar__logo {
+      height: var(--topbar-h);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-mark {
+      width: 28px; height: 28px;
+      border: 2px solid var(--text-1);
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      color: var(--text-1);
+      line-height: 1.2;
+    }
+    .logo-text span { display: block; font-size: 9px; font-weight: 400; color: var(--text-3); letter-spacing: .5px; text-transform: uppercase; }
+
+    .sidebar__nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+
+    .nav-section {
+      margin-top: 12px;
+      padding: 0 8px 4px;
+      font-size: 9px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .nav-section:first-child { margin-top: 0; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      color: var(--text-2);
+      transition: background .1s;
+      text-decoration: none;
+    }
+    .nav-item:hover { background: var(--bg); color: var(--text-1); }
+    .nav-item.active {
+      background: var(--text-1);
+      color: #fff;
+    }
+    .nav-item.active .nav-icon { border-color: #fff; }
+
+    .nav-icon {
+      width: 18px; height: 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 3px;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      flex-shrink: 0;
+    }
+    .nav-item.active .nav-icon { border-color: rgba(255,255,255,.4); }
+
+    .nav-label { font-size: 12px; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--border);
+      color: var(--text-2);
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 20px;
+    }
+    .nav-item.active .nav-badge { background: rgba(255,255,255,.2); color: #fff; }
+
+    .sidebar__footer {
+      padding: 12px 8px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 30px; height: 30px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      color: var(--text-2);
+      flex-shrink: 0;
+    }
+    .avatar-info { line-height: 1.4; }
+    .avatar-name { font-size: 11px; font-weight: 600; color: var(--text-1); }
+    .avatar-role { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; }
+
+    /* ─── MAIN ─────────────────────────────────────────────── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ─── TOPBAR ───────────────────────────────────────────── */
+    .topbar {
+      height: var(--topbar-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .topbar__breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-3);
+      font-size: 12px;
+    }
+    .topbar__breadcrumb strong { color: var(--text-1); }
+    .topbar__breadcrumb span { font-size: 10px; }
+
+    .topbar__spacer { flex: 1; }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 12px;
+      width: 220px;
+      background: var(--bg);
+    }
+    .search-box input {
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-1);
+      outline: none;
+      width: 100%;
+    }
+    .search-box input::placeholder { color: var(--text-3); }
+    .search-icon { font-size: 11px; color: var(--text-3); }
+
+    .topbar__actions { display: flex; align-items: center; gap: 8px; }
+
+    .icon-btn {
+      width: 32px; height: 32px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-2);
+      position: relative;
+    }
+    .icon-btn .dot {
+      position: absolute;
+      top: 5px; right: 5px;
+      width: 5px; height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+      border: 1px solid var(--surface);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      font-weight: 600;
+      letter-spacing: .2px;
+    }
+    .btn-primary { background: var(--text-1); color: #fff; }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-2); }
+
+    /* ─── CONTENT ──────────────────────────────────────────── */
+    .content { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+
+    /* ─── PAGE HEADER ──────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .page-title { font-size: 18px; font-weight: 700; letter-spacing: -.5px; }
+    .page-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .page-header-actions { display: flex; gap: 8px; }
+
+    /* ─── STATUS BAR ───────────────────────────────────────── */
+    .status-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      box-shadow: var(--shadow);
+    }
+    .status-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-2); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--text-2); }
+    .status-dot.on { background: var(--text-2); }
+    .status-label { font-weight: 600; color: var(--text-1); }
+    .status-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+    .status-bar-right { margin-left: auto; font-size: 11px; color: var(--text-3); }
+
+    /* ─── METRICS GRID ─────────────────────────────────────── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--border);
+    }
+
+    .metric-header { display: flex; align-items: center; justify-content: space-between; }
+    .metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); }
+    .metric-icon {
+      width: 22px; height: 22px;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      color: var(--text-3);
+    }
+
+    .metric-value { font-size: 26px; font-weight: 700; letter-spacing: -1px; color: var(--text-1); line-height: 1; }
+
+    .metric-footer { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-3); }
+    .metric-delta { display: flex; align-items: center; gap: 2px; font-weight: 600; color: var(--text-2); }
+    .metric-spark {
+      margin-top: 4px;
+      height: 28px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    .spark-bar {
+      flex: 1;
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    /* ─── TWO-COL LAYOUT ───────────────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 320px; gap: 14px; }
+
+    /* ─── PANEL ────────────────────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title { font-size: 12px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; }
+    .panel-meta { font-size: 10px; color: var(--text-3); }
+    .panel-actions { display: flex; gap: 6px; }
+
+    /* ─── FILTERS BAR ──────────────────────────────────────── */
+    .filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--stripe);
+      flex-wrap: wrap;
+    }
+
+    .filter-select {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      font-family: inherit;
+      font-size: 11px;
+      color: var(--text-2);
+      cursor: pointer;
+    }
+    .filter-select select {
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 11px;
+      color: var(--text-2);
+      outline: none;
+    }
+
+    .filter-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border: 1px dashed var(--border);
+      border-radius: 20px;
+      font-size: 10px;
+      color: var(--text-3);
+      cursor: pointer;
+    }
+    .filter-tag.applied {
+      border-style: solid;
+      border-color: var(--accent-lt);
+      background: var(--bg);
+      color: var(--text-2);
+    }
+    .filters-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+
+    /* ─── TABLE ────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead tr {
+      background: var(--stripe);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 10px 18px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    th.sortable { cursor: pointer; }
+    th.sortable::after { content: ' ↕'; opacity: .4; }
+    th.sort-asc::after { content: ' ↑'; opacity: 1; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-soft);
+      transition: background .1s;
+    }
+    tbody tr:hover { background: var(--stripe); }
+    tbody tr:last-child { border-bottom: none; }
+
+    td { padding: 11px 18px; font-size: 12px; color: var(--text-2); vertical-align: middle; }
+
+    .td-main { color: var(--text-1); font-weight: 600; }
+    .td-sub { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+
+    .checkbox-cell { width: 36px; padding-left: 18px; }
+    .cb {
+      width: 14px; height: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 3px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .cb.checked { background: var(--text-1); border-color: var(--text-1); }
+    .cb.checked::after { content: '✓'; color: #fff; font-size: 9px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      background: var(--bg);
+    }
+    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--border); }
+    .badge.active::before { background: var(--accent); }
+    .badge.idle::before { background: var(--text-3); border: 1px solid var(--border); }
+
+    .progress-wrap { display: flex; align-items: center; gap: 8px; }
+    .progress-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; min-width: 60px; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+    .progress-pct { font-size: 10px; color: var(--text-3); white-space: nowrap; }
+
+    .row-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .1s; }
+    tbody tr:hover .row-actions { opacity: 1; }
+    .row-action {
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text-2);
+    }
+
+    /* ─── TABLE FOOTER ─────────────────────────────────────── */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      background: var(--stripe);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .pagination { display: flex; gap: 4px; }
+    .page-btn {
+      width: 28px; height: 28px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text-2);
+    }
+    .page-btn.current { background: var(--text-1); color: #fff; border-color: var(--text-1); }
+
+    /* ─── SIDE PANELS ──────────────────────────────────────── */
+    .side-stack { display: flex; flex-direction: column; gap: 14px; }
+
+    /* Agent activity */
+    .agent-list { padding: 8px 0; }
+    .agent-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .agent-row:last-child { border-bottom: none; }
+    .agent-avatar {
+      width: 28px; height: 28px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      color: var(--text-3);
+      flex-shrink: 0;
+    }
+    .agent-name { font-size: 11px; font-weight: 600; color: var(--text-1); }
+    .agent-status { font-size: 10px; color: var(--text-3); }
+    .agent-calls { margin-left: auto; text-align: right; }
+    .agent-calls-n { font-size: 13px; font-weight: 700; color: var(--text-1); }
+    .agent-calls-l { font-size: 9px; color: var(--text-3); }
+
+    /* Mini chart */
+    .mini-chart {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 80px;
+    }
+    .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .chart-bar { width: 100%; background: var(--border); border-radius: 3px 3px 0 0; }
+    .chart-lbl { font-size: 8px; color: var(--text-3); }
+    .chart-legend { display: flex; gap: 12px; justify-content: flex-end; }
+    .chart-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-3); }
+    .legend-dot { width: 7px; height: 7px; border-radius: 1px; background: var(--border); }
+    .legend-dot.filled { background: var(--accent); }
+
+    /* Queue */
+    .queue-list { padding: 8px 0; }
+    .queue-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .queue-row:last-child { border-bottom: none; }
+    .queue-num {
+      width: 22px; height: 22px;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-3);
+      flex-shrink: 0;
+    }
+    .queue-info { flex: 1; }
+    .queue-name { font-size: 11px; font-weight: 600; color: var(--text-1); }
+    .queue-wait { font-size: 10px; color: var(--text-3); }
+    .queue-action {
+      font-size: 10px;
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-2);
+    }
+
+    /* ─── OVERLAY SKELETON LINES ───────────────────────────── */
+    .skel {
+      display: inline-block;
+      height: 10px;
+      background: var(--border);
+      border-radius: 3px;
+      vertical-align: middle;
+    }
+
+    /* ─── SECTION DIVIDER ──────────────────────────────────── */
+    .section-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-3);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: -10px;
+    }
+
+    /* ─── RESPONSIVE HINT ──────────────────────────────────── */
+    @media (max-width: 1200px) {
+      .two-col { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════ -->
+<aside class="sidebar">
+
+  <div class="sidebar__logo">
+    <div class="logo-mark">CC</div>
+    <div class="logo-text">
+      CobranzaOS
+      <span>Admin Panel v2.4</span>
+    </div>
+  </div>
+
+  <nav class="sidebar__nav">
+
+    <div class="nav-section">Principal</div>
+
+    <a class="nav-item active" href="#">
+      <div class="nav-icon">▦</div>
+      <span class="nav-label">Dashboard</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">◎</div>
+      <span class="nav-label">Operaciones</span>
+      <span class="nav-badge">Live</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">◫</div>
+      <span class="nav-label">Campañas</span>
+      <span class="nav-badge">7</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">☏</div>
+      <span class="nav-label">Llamadas</span>
+    </a>
+
+    <div class="nav-section">Gestión</div>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">⊞</div>
+      <span class="nav-label">Agentes</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">◱</div>
+      <span class="nav-label">Deudores</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">◈</div>
+      <span class="nav-label">Carteras</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">◐</div>
+      <span class="nav-label">Acuerdos</span>
+      <span class="nav-badge">12</span>
+    </a>
+
+    <div class="nav-section">Análisis</div>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">◰</div>
+      <span class="nav-label">Reportes</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">◳</div>
+      <span class="nav-label">Auditoría</span>
+    </a>
+
+    <div class="nav-section">Sistema</div>
+
+    <a class="nav-item" href="#">
+      <div class="nav-icon">⊙</div>
+      <span class="nav-label">Configuración</span>
+    </a>
+
+  </nav>
+
+  <div class="sidebar__footer">
+    <div class="avatar">JR</div>
+    <div class="avatar-info">
+      <div class="avatar-name">J. Rodríguez</div>
+      <div class="avatar-role">Supervisor</div>
+    </div>
+  </div>
+
+</aside>
+
+
+<!-- ═══════════════════════════════════════
+     MAIN
+════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar__breadcrumb">
+      <span>CobranzaOS</span>
+      <span>›</span>
+      <strong>Dashboard</strong>
+    </div>
+
+    <div class="topbar__spacer"></div>
+
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input type="text" placeholder="Buscar deudor, folio, teléfono…" />
+    </div>
+
+    <div class="topbar__actions">
+      <div class="icon-btn">
+        ⏱
+      </div>
+      <div class="icon-btn">
+        ◫
+        <div class="dot"></div>
+      </div>
+      <div class="icon-btn">≡</div>
+    </div>
+  </header>
+
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard operativo</div>
+        <div class="page-sub">Lun 14 May 2026 · Turno matutino 08:00–16:00 · Semana 20</div>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-ghost">⬇ Exportar</button>
+        <button class="btn btn-primary">+ Nueva campaña</button>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="status-dot on"></div>
+        <span>Sistema:</span>
+        <span class="status-label">Operativo</span>
+      </div>
+      <div class="status-sep"></div>
+      <div class="status-item">
+        <div class="status-dot on"></div>
+        <span>Marcador:</span>
+        <span class="status-label">Predictivo · Activo</span>
+      </div>
+      <div class="status-sep"></div>
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <span>Grabación:</span>
+        <span class="status-label">100% captura</span>
+      </div>
+      <div class="status-sep"></div>
+      <div class="status-item">
+        <span>Agentes en línea:</span>
+        <span class="status-label">24 / 30</span>
+      </div>
+      <div class="status-sep"></div>
+      <div class="status-item">
+        <span>Cola actual:</span>
+        <span class="status-label">8 contactos</span>
+      </div>
+      <div class="status-bar-right">Actualizado: hace 28 seg &nbsp;·&nbsp; ↻ Auto</div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics-grid">
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-label">Llamadas hoy</div>
+          <div class="metric-icon">☏</div>
+        </div>
+        <div class="metric-value">1,842</div>
+        <div class="metric-spark">
+          <div class="spark-bar" style="height:30%"></div>
+          <div class="spark-bar" style="height:50%"></div>
+          <div class="spark-bar" style="height:45%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:80%"></div>
+          <div class="spark-bar" style="height:75%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-delta">↑ 12.4%</span>
+          <span>vs. ayer 1,639</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-label">Tasa de contacto</div>
+          <div class="metric-icon">◎</div>
+        </div>
+        <div class="metric-value">67.3%</div>
+        <div class="metric-spark">
+          <div class="spark-bar" style="height:55%"></div>
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:50%"></div>
+          <div class="spark-bar" style="height:65%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:68%"></div>
+          <div class="spark-bar" style="height:72%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-delta">↑ 3.1%</span>
+          <span>Meta: 70%</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-label">Monto recuperado</div>
+          <div class="metric-icon">$</div>
+        </div>
+        <div class="metric-value">$284K</div>
+        <div class="metric-spark">
+          <div class="spark-bar" style="height:40%"></div>
+          <div class="spark-bar" style="height:55%"></div>
+          <div class="spark-bar" style="height:65%"></div>
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:75%"></div>
+          <div class="spark-bar" style="height:80%"></div>
+          <div class="spark-bar" style="height:90%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-delta">↑ 8.7%</span>
+          <span>Meta diaria: $320K</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-label">Acuerdos firmados</div>
+          <div class="metric-icon">◈</div>
+        </div>
+        <div class="metric-value">143</div>
+        <div class="metric-spark">
+          <div class="spark-bar" style="height:35%"></div>
+          <div class="spark-bar" style="height:45%"></div>
+          <div class="spark-bar" style="height:55%"></div>
+          <div class="spark-bar" style="height:50%"></div>
+          <div class="spark-bar" style="height:65%"></div>
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:80%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-delta">↓ 2.0%</span>
+          <span>Tasa promesas: 7.8%</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-label">TMO (seg)</div>
+          <div class="metric-icon">⏱</div>
+        </div>
+        <div class="metric-value">3:42</div>
+        <div class="metric-spark">
+          <div class="spark-bar" style="height:80%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:90%"></div>
+          <div class="spark-bar" style="height:75%"></div>
+          <div class="spark-bar" style="height:65%"></div>
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:55%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-delta">↑ 0:18</span>
+          <span>Meta: &lt; 4:00</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-label">Nivel de servicio</div>
+          <div class="metric-icon">◰</div>
+        </div>
+        <div class="metric-value">91%</div>
+        <div class="metric-spark">
+          <div class="spark-bar" style="height:85%"></div>
+          <div class="spark-bar" style="height:88%"></div>
+          <div class="spark-bar" style="height:80%"></div>
+          <div class="spark-bar" style="height:90%"></div>
+          <div class="spark-bar" style="height:95%"></div>
+          <div class="spark-bar" style="height:88%"></div>
+          <div class="spark-bar" style="height:92%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-delta">↑ 1.2%</span>
+          <span>SLA: 80% en &lt;20 seg</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-label">Abandonos</div>
+          <div class="metric-icon">✕</div>
+        </div>
+        <div class="metric-value">4.1%</div>
+        <div class="metric-spark">
+          <div class="spark-bar" style="height:60%"></div>
+          <div class="spark-bar" style="height:55%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:65%"></div>
+          <div class="spark-bar" style="height:50%"></div>
+          <div class="spark-bar" style="height:45%"></div>
+          <div class="spark-bar" style="height:40%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-delta">↓ 0.8%</span>
+          <span>Límite: 5%</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-label">Carteras activas</div>
+          <div class="metric-icon">◫</div>
+        </div>
+        <div class="metric-value">7</div>
+        <div class="metric-spark">
+          <div class="spark-bar" style="height:50%"></div>
+          <div class="spark-bar" style="height:50%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:70%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+          <div class="spark-bar" style="height:100%"></div>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-delta">= 0</span>
+          <span>41,230 registros totales</span>
+        </div>
+      </div>
+
+    </div><!-- /metrics-grid -->
+
+
+    <!-- Two-col section -->
+    <div class="two-col">
+
+      <!-- LEFT: Main table -->
+      <div class="panel">
+
+        <div class="panel-header">
+          <div class="panel-title">Agentes — Rendimiento hoy</div>
+          <div class="panel-meta">24 activos · 6 en pausa</div>
+          <div class="panel-actions">
+            <button class="btn btn-ghost">Ver todos</button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+          <div class="filter-select">
+            <span>Turno:</span>
+            <select><option>Matutino</option><option>Vespertino</option><option>Nocturno</option></select>
+          </div>
+          <div class="filter-select">
+            <span>Cartera:</span>
+            <select><option>Todas</option><option>BBVA Crédito</option><option>Santander Auto</option></select>
+          </div>
+          <div class="filter-select">
+            <span>Estado:</span>
+            <select><option>Todos</option><option>Activo</option><option>Pausa</option><option>Desconectado</option></select>
+          </div>
+          <div class="filter-tag applied">↑ Mayor recuperación ✕</div>
+          <div class="filter-tag">+ Agregar filtro</div>
+          <div class="filters-right">
+            <button class="btn btn-ghost">↻ Actualizar</button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="checkbox-cell"><div class="cb"></div></th>
+                <th>Agente</th>
+                <th class="sortable sort-asc">Llamadas</th>
+                <th class="sortable">Contactados</th>
+                <th class="sortable">Acuerdos</th>
+                <th class="sortable">Recuperado</th>
+                <th>TMO</th>
+                <th>Avance meta</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- Row 1 -->
+              <tr>
+                <td class="checkbox-cell"><div class="cb checked"></div></td>
+                <td>
+                  <div class="td-main">Ana L. Vega</div>
+                  <div class="td-sub">Ext. 4102 · BBVA Crédito</div>
+                </td>
+                <td><div class="td-main">98</div></td>
+                <td>71</td>
+                <td>14</td>
+                <td><div class="td-main">$18,400</div></td>
+                <td>3:28</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar"><div class="progress-fill" style="width:82%"></div></div>
+                    <div class="progress-pct">82%</div>
+                  </div>
+                </td>
+                <td><span class="badge active">En llamada</span></td>
+                <td><div class="row-actions"><button class="row-action">Ver</button><button class="row-action">Escuchar</button></div></td>
+              </tr>
+
+              <!-- Row 2 -->
+              <tr>
+                <td class="checkbox-cell"><div class="cb"></div></td>
+                <td>
+                  <div class="td-main">Carlos M. Ríos</div>
+                  <div class="td-sub">Ext. 4115 · Santander Auto</div>
+                </td>
+                <td><div class="td-main">87</div></td>
+                <td>63</td>
+                <td>11</td>
+                <td><div class="td-main">$14,900</div></td>
+                <td>3:51</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar"><div class="progress-fill" style="width:74%"></div></div>
+                    <div class="progress-pct">74%</div>
+                  </div>
+                </td>
+                <td><span class="badge active">En llamada</span></td>
+                <td><div class="row-actions"><button class="row-action">Ver</button><button class="row-action">Escuchar</button></div></td>
+              </tr>
+
+              <!-- Row 3 -->
+              <tr>
+                <td class="checkbox-cell"><div class="cb"></div></td>
+                <td>
+                  <div class="td-main">Diana P. Flores</div>
+                  <div class="td-sub">Ext. 4098 · HSBC Nómina</div>
+                </td>
+                <td><div class="td-main">102</div></td>
+                <td>78</td>
+                <td>18</td>
+                <td><div class="td-main">$22,700</div></td>
+                <td>3:12</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar"><div class="progress-fill" style="width:96%"></div></div>
+                    <div class="progress-pct">96%</div>
+                  </div>
+                </td>
+                <td><span class="badge active">En llamada</span></td>
+                <td><div class="row-actions"><button class="row-action">Ver</button><button class="row-action">Escuchar</button></div></td>
+              </tr>
+
+              <!-- Row 4 -->
+              <tr>
+                <td class="checkbox-cell"><div class="cb"></div></td>
+                <td>
+                  <div class="td-main">Ernesto V. Torres</div>
+                  <div class="td-sub">Ext. 4073 · Banamex TDC</div>
+                </td>
+                <td><div class="td-main">61</div></td>
+                <td>40</td>
+                <td>6</td>
+                <td><div class="td-main">$8,200</div></td>
+                <td>4:22</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar"><div class="progress-fill" style="width:48%"></div></div>
+                    <div class="progress-pct">48%</div>
+                  </div>
+                </td>
+                <td><span class="badge idle">En pausa</span></td>
+                <td><div class="row-actions"><button class="row-action">Ver</button><button class="row-action">Activar</button></div></td>
+              </tr>
+
+              <!-- Row 5 -->
+              <tr>
+                <td class="checkbox-cell"><div class="cb"></div></td>
+                <td>
+                  <div class="td-main">Fabiola S. Méndez</div>
+                  <div class="td-sub">Ext. 4141 · BBVA Crédito</div>
+                </td>
+                <td><div class="td-main">79</div></td>
+                <td>58</td>
+                <td>9</td>
+                <td><div class="td-main">$11,350</div></td>
+                <td>3:38</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar"><div class="progress-fill" style="width:67%"></div></div>
+                    <div class="progress-pct">67%</div>
+                  </div>
+                </td>
+                <td><span class="badge active">En llamada</span></td>
+                <td><div class="row-actions"><button class="row-action">Ver</button><button class="row-action">Escuchar</button></div></td>
+              </tr>
+
+              <!-- Row 6 -->
+              <tr>
+                <td class="checkbox-cell"><div class="cb"></div></td>
+                <td>
+                  <div class="td-main">Gerardo N. Salinas</div>
+                  <div class="td-sub">Ext. 4056 · Inbursa Personal</div>
+                </td>
+                <td><div class="td-main">54</div></td>
+                <td>35</td>
+                <td>5</td>
+                <td><div class="td-main">$6,800</div></td>
+                <td>4:44</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar"><div class="progress-fill" style="width:41%"></div></div>
+                    <div class="progress-pct">41%</div>
+                  </div>
+                </td>
+                <td><span class="badge idle">En pausa</span></td>
+                <td><div class="row-actions"><button class="row-action">Ver</button><button class="row-action">Activar</button></div></td>
+              </tr>
+
+              <!-- Row 7 -->
+              <tr>
+                <td class="checkbox-cell"><div class="cb"></div></td>
+                <td>
+                  <div class="td-main">Hilda G. Castillo</div>
+                  <div class="td-sub">Ext. 4188 · Santander Auto</div>
+                </td>
+                <td><div class="td-main">91</div></td>
+                <td>66</td>
+                <td>12</td>
+                <td><div class="td-main">$15,600</div></td>
+                <td>3:20</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar"><div class="progress-fill" style="width:77%"></div></div>
+                    <div class="progress-pct">77%</div>
+                  </div>
+                </td>
+                <td><span class="badge active">En llamada</span></td>
+                <td><div class="row-actions"><button class="row-action">Ver</button><button class="row-action">Escuchar</button></div></td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table footer -->
+        <div class="table-footer">
+          <span>Mostrando 7 de 30 agentes</span>
+          <div class="pagination">
+            <div class="page-btn">‹</div>
+            <div class="page-btn current">1</div>
+            <div class="page-btn">2</div>
+            <div class="page-btn">3</div>
+            <div class="page-btn">4</div>
+            <div class="page-btn">›</div>
+          </div>
+          <div class="filter-select" style="border:1px solid var(--border); padding:4px 8px;">
+            <span>Filas:</span>
+            <select><option>7</option><option>15</option><option>30</option></select>
+          </div>
+        </div>
+
+      </div><!-- /panel left -->
+
+
+      <!-- RIGHT: Side panels -->
+      <div class="side-stack">
+
+        <!-- Distribución por hora -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Llamadas por hora</div>
+            <div class="panel-meta">Hoy</div>
+          </div>
+          <div class="mini-chart">
+            <div class="chart-bars">
+              <div class="chart-col">
+                <div class="chart-bar" style="height:30%"></div>
+                <div class="chart-lbl">8h</div>
+              </div>
+              <div class="chart-col">
+                <div class="chart-bar" style="height:55%"></div>
+                <div class="chart-lbl">9h</div>
+              </div>
+              <div class="chart-col">
+                <div class="chart-bar" style="height:80%"></div>
+                <div class="chart-lbl">10h</div>
+              </div>
+              <div class="chart-col">
+                <div class="chart-bar" style="height:100%"></div>
+                <div class="chart-lbl">11h</div>
+              </div>
+              <div class="chart-col">
+                <div class="chart-bar" style="height:90%"></div>
+                <div class="chart-lbl">12h</div>
+              </div>
+              <div class="chart-col">
+                <div class="chart-bar" style="height:70%"></div>
+                <div class="chart-lbl">13h</div>
+              </div>
+              <div class="chart-col">
+                <div class="chart-bar" style="height:60%"></div>
+                <div class="chart-lbl">14h</div>
+              </div>
+              <div class="chart-col">
+                <div class="chart-bar" style="height:40%"></div>
+                <div class="chart-lbl">15h</div>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <div class="chart-legend-item"><div class="legend-dot filled"></div>Realizadas</div>
+              <div class="chart-legend-item"><div class="legend-dot"></div>Contactadas</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cola en espera -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Cola en espera</div>
+            <div class="panel-meta">8 contactos</div>
+          </div>
+          <div class="queue-list">
+            <div class="queue-row">
+              <div class="queue-num">1</div>
+              <div class="queue-info">
+                <div class="queue-name">R. Gutiérrez · 55 4412 XXXX</div>
+                <div class="queue-wait">Espera: 2:14 · Reintento #3</div>
+              </div>
+              <button class="queue-action">Asignar</button>
+            </div>
+            <div class="queue-row">
+              <div class="queue-num">2</div>
+              <div class="queue-info">
+                <div class="queue-name">M. Hernández · 33 1289 XXXX</div>
+                <div class="queue-wait">Espera: 1:47 · Reintento #1</div>
+              </div>
+              <button class="queue-action">Asignar</button>
+            </div>
+            <div class="queue-row">
+              <div class="queue-num">3</div>
+              <div class="queue-info">
+                <div class="queue-name">L. Jiménez · 81 9034 XXXX</div>
+                <div class="queue-wait">Espera: 0:52 · Reintento #2</div>
+              </div>
+              <button class="queue-action">Asignar</button>
+            </div>
+            <div class="queue-row">
+              <div class="queue-num">4</div>
+              <div class="queue-info">
+                <div class="queue-name">P. Morales · 55 7731 XXXX</div>
+                <div class="queue-wait">Espera: 0:18 · Reintento #1</div>
+              </div>
+              <button class="queue-action">Asignar</button>
+            </div>
+            <div class="queue-row" style="justify-content:center; padding:10px 18px;">
+              <span style="font-size:11px; color:var(--text-3);">+ 4 más en cola →</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top agentes -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Top agentes · Hoy</div>
+            <div class="panel-meta">por monto</div>
+          </div>
+          <div class="agent-list">
+            <div class="agent-row">
+              <div class="agent-avatar">DF</div>
+              <div>
+                <div class="agent-name">Diana P. Flores</div>
+                <div class="agent-status">96% meta · 18 acuerdos</div>
+              </div>
+              <div class="agent-calls">
+                <div class="agent-calls-n">$22.7K</div>
+                <div class="agent-calls-l">recuperado</div>
+              </div>
+            </div>
+            <div class="agent-row">
+              <div class="agent-avatar">AV</div>
+              <div>
+                <div class="agent-name">Ana L. Vega</div>
+                <div class="agent-status">82% meta · 14 acuerdos</div>
+              </div>
+              <div class="agent-calls">
+                <div class="agent-calls-n">$18.4K</div>
+                <div class="agent-calls-l">recuperado</div>
+              </div>
+            </div>
+            <div class="agent-row">
+              <div class="agent-avatar">HC</div>
+              <div>
+                <div class="agent-name">Hilda G. Castillo</div>
+                <div class="agent-status">77% meta · 12 acuerdos</div>
+              </div>
+              <div class="agent-calls">
+                <div class="agent-calls-n">$15.6K</div>
+                <div class="agent-calls-l">recuperado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /side-stack -->
+
+    </div><!-- /two-col -->
+
+  </main><!-- /content -->
+</div><!-- /main -->
+
+</body>
+</html>
